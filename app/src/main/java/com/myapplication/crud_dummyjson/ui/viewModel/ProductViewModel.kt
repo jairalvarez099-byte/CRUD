@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.myapplication.crud_dummyjson.domain.model.ProductModel
 import com.myapplication.crud_dummyjson.domain.repository.ProductRepository
+import com.myapplication.crud_dummyjson.domain.useCase.GetProducUseCase
 import com.myapplication.crud_dummyjson.ui.state.ProductUIState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
+    private val getProductsUseCase: GetProducUseCase,
     private val repository: ProductRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ProductUIState())
@@ -25,7 +27,7 @@ class ProductViewModel @Inject constructor(
     fun loadProducts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { repository.getProducts() }
+            runCatching { getProductsUseCase() }
                 .onSuccess { list -> _uiState.update { it.copy(isLoading = false, products = list) } }
                 .onFailure { e -> _uiState.update { it.copy(isLoading = false, errorMessage = e.message ?: "No se pudieron cargar los productos") } }
         }
